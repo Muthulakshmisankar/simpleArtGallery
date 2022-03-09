@@ -86,7 +86,7 @@ box4.position.z = -80
 box4.position.y = -10
 box4.position.x = -10
 
-scene.add(box, box2 , box3 );
+scene.add(box, box2, box3);
 // }
 
 
@@ -99,6 +99,25 @@ pointLight.position.y = 3
 pointLight.position.z = 4
 scene.add(ambLight, pointLight)
 
+let sensitivity = 0.02;
+document.addEventListener('keydown', event => {
+    // if (event.key == 'Shift') {
+    //     camera.position.y -= event.movementY * sensitivity / 0.10
+    //     camera.position.x -= event.movementX * sensitivity / 0.10
+    //     camera.position.z -= event.movementX * sensitivity / 0.10
+    // }
+    camera.position.y -= 1
+    // camera.position.x -= event.movementX * 0.001
+    // camera.position.z -= event.movementX * 0.001
+})
+
+document.addEventListener('keyup', event => {
+    // if (event.key == 'Shift') {
+    camera.position.y += 1
+    // camera.position.x = event.movementX * 0.001
+    // camera.position.z = event.movementX * 0.001
+    // }
+})
 
 // const loader = new GLTFLoader();
 // loader.load(this.url, ((gltf) => {
@@ -166,7 +185,6 @@ const clock = new THREE.Clock()
 
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
-
     // Update controls
     controls.update()
 
