@@ -12,112 +12,210 @@ const canvas = document.querySelector('canvas.webgl')
  * textures
  */
 
-const cubeTextureLoader = new THREE.CubeTextureLoader()
-const environmentMapTexture = cubeTextureLoader.load(['/textures/environmentMaps/4/px.png',
-    '/textures/environmentMaps/4/nx.png',
-    '/textures/environmentMaps/4/py.png',
-    '/textures/environmentMaps/4/ny.png',
-    '/textures/environmentMaps/4/pz.png',
-    '/textures/environmentMaps/4/nz.png'])
 
-const textureLoader = new THREE.TextureLoader()
-const framecolorTexture = textureLoader.load('textures/picture_frame/textures/diff.png')
-const frameAlphaTexture = textureLoader.load('textures/picture_frame/textures/alpha.png');
-const frameAmbientOcclusionTexture = textureLoader.load('textures/picture_frame/textures/ao.png');
-const frameHeightTexture = textureLoader.load('textures/picture_frame/textures/arm.png');
-const frameNormalTexture = textureLoader.load('textures/picture_frame/textures/normal.png');
-const frameMetalnessTexture = textureLoader.load('textures/picture_frame/textures/metal.png');
-const frameRoughnessTexture = textureLoader.load('textures/picture_frame/textures/rough.png');
-// const matCaptTexture = textureLoader.load('textures/picture_frame/textures/diff.png')
-// const gradientTexture = textureLoader.load('textures/picture_frame/textures/diff.png')
+
+const artTextureLoader = new THREE.TextureLoader()
+const artcolorTexture = artTextureLoader.load('textures/picture_frame/textures/diff.png')
+const artAlphaTexture = artTextureLoader.load('textures/picture_frame/textures/alpha.png');
+const artAmbientOcclusionTexture = artTextureLoader.load('textures/picture_frame/textures/ao.png');
+const artHeightTexture = artTextureLoader.load('textures/picture_frame/textures/arm.png');
+const artNormalTexture = artTextureLoader.load('textures/picture_frame/textures/normal.png');
+const artMetalnessTexture = artTextureLoader.load('textures/picture_frame/textures/metal.png');
+const artRoughnessTexture = artTextureLoader.load('textures/picture_frame/textures/rough.png');
+
+
+
+
+const floortextureLoader = new THREE.TextureLoader()
+const floorcolorTexture = floortextureLoader.load('textures/FLOORING/Base.png')
+// const floorAlphaTexture = floortextureLoader.load('textures/picture_frame/textures/alpha.png');
+// const floorAmbientOcclusionTexture = floortextureLoader.load('textures/picture_frame/textures/ao.png');
+const floorHeightTexture = floortextureLoader.load('textures/FLOORING/Height.png');
+const floorNormalTexture = floortextureLoader.load('textures/FLOORING/Normal.png');
+// const floorMetalnessTexture = floortextureLoader.load('textures/picture_frame/textures/metal.png');
+const floorRoughnessTexture = floortextureLoader.load('textures/FLOORING/Roughness.png');
+
+
+const rooftextureLoader = new THREE.TextureLoader()
+const roofcolorTexture = rooftextureLoader.load('textures/picture_frame/textures/diff.png')
+const roofAlphaTexture = rooftextureLoader.load('textures/picture_frame/textures/alpha.png');
+const roofAmbientOcclusionTexture = rooftextureLoader.load('textures/picture_frame/textures/ao.png');
+const roofHeightTexture = rooftextureLoader.load('textures/picture_frame/textures/arm.png');
+const roofNormalTexture = rooftextureLoader.load('textures/picture_frame/textures/normal.png');
+const roofMetalnessTexture = rooftextureLoader.load('textures/picture_frame/textures/metal.png');
+const roofRoughnessTexture = rooftextureLoader.load('textures/picture_frame/textures/rough.png');
+
+const walltextureLoader = new THREE.TextureLoader()
+const wallcolorTexture = walltextureLoader.load('textures/joe-wood/joe-wood.jpg')
+// const wallAlphaTexture = walltextureLoader.load('textures/joe-wood/pinpoint.jpg');
+// const wallAmbientOcclusionTexture = walltextureLoader.load('textures/joe-wood/pinpoint.jpg');
+// const wallHeightTexture = walltextureLoader.load('textures/joe-wood/pinpoint.jpg');
+const wallNormalTexture = walltextureLoader.load('textures/joe-wood/wall.jpg');
+const wallMetalnessTexture = walltextureLoader.load('textures/joe-wood/metal.jpg');
+const wallRoughnessTexture = walltextureLoader.load('textures/joe-wood/pinpoint.jpg');
+
 
 // Scene
 const scene = new THREE.Scene()
-scene.background = environmentMapTexture;
-scene.environment = environmentMapTexture;
-
-const material = new THREE.MeshStandardMaterial()
-// material.metalness = 1
-// material.roughness = 0.6
-material.map = framecolorTexture
-material.aoMap = frameAmbientOcclusionTexture
-material.aoMapIntensity = 1
-material.displacementMap = frameHeightTexture
-material.displacementScale = 0.05
-material.metalnessMap = frameMetalnessTexture
-material.roughnessMap = frameRoughnessTexture
-material.normalMap = frameNormalTexture
-material.normalScale.set(0.5, 0.5)
-// material.alphaMap = frameAlphaTexture
-// material.transparent = true 
 
 
-// box.position.z = -80
-// box.position.y = -10
-// for (let i = 0; i < 5; i++) {
-const box = new THREE.Mesh(
-    new THREE.BoxGeometry(40, 40, 0.2, 5),
-    material
-)
-box.position.z = -80
-box.position.y = -10
+const roofMaterial = new THREE.MeshStandardMaterial({
+    metalness: 0.3,
+    roughness: 0.4,
+    side: THREE.DoubleSide,
+    // map: roofcolorTexture,
+    // aoMap: roofAmbientOcclusionTexture,
+    // aoMapIntensity: 1,
+    // displacementMap: roofHeightTexture,
+    // displacementScale: 0.05,
+    // metalnessMap: roofMetalnessTexture,
+    // roughnessMap: roofRoughnessTexture,
+    // normalMap: roofNormalTexture
+    // material.normalScale.set(0.5, 0.5)
+    // material.alphaMap = frameAlphaTexture
+    // material.transparent = true 
+})
 
-const box2 = new THREE.Mesh(
-    new THREE.BoxGeometry(40, 40, 0.2, 5),
-    material
-)
-box2.position.z = -80
-box2.position.y = -10
-box2.position.x = 60
+const floorMaterial = new THREE.MeshStandardMaterial({
+    metalness: 0.3,
+    roughness: 0.4,
+    side: THREE.DoubleSide,
+    map: floorcolorTexture,
+    roughnessMap: floorRoughnessTexture,
+    normalMap: floorNormalTexture
+})
+const wallMaterial = new THREE.MeshStandardMaterial({
+    metalness: 0.3,
+    roughness: 0.4,
+    side: THREE.DoubleSide,
+    map: wallcolorTexture,
+    // aoMap: wallMetalnessTexture,
+    // aoMapIntensity: 1,
+    // displacementMap: wallcolorTexture,
+    // displacementScale: 0.05,
+    // metalnessMap: wallMetalnessTexture,
+    // roughnessMap: wallRoughnessTexture,
+    normalMap: wallNormalTexture
+})
+const frameMaterial = new THREE.MeshBasicMaterial({
+    metalness: 0.3,
+    roughness: 0.4,
+    side: THREE.DoubleSide,
+    // map: framecolorTexture,
+    emissive: '#fffffff'
+    // aoMap: wallMetalnessTexture,
+    // aoMapIntensity: 1,
+    // displacementMap: wallcolorTexture,
+    // displacementScale: 0.05,
+    // metalnessMap: wallMetalnessTexture,
+    // roughnessMap: wallRoughnessTexture,
+    // normalMap: framecolorTexture
+})
 
-const box3 = new THREE.Mesh(
-    new THREE.BoxGeometry(40, 40, 0.2, 5),
-    material
-)
-box3.position.z = -70
-box3.position.y = -10
-box3.position.x = -60
+const house = new THREE.Object3D();
+const floor = new THREE.Mesh(new THREE.PlaneBufferGeometry(14, 14, 4), floorMaterial)
+floor.rotation.x = - Math.PI * 0.5
+floor.position.y = -2
 
-const box4 = new THREE.Mesh(
-    new THREE.BoxGeometry(40, 40, 0.2, 5),
-    material
-)
-box4.position.z = -80
-box4.position.y = -10
-box4.position.x = -10
+house.add(floor)
 
-scene.add(box, box2, box3);
-// }
+const wall1 = new THREE.Mesh(new THREE.PlaneBufferGeometry(14, 7), wallMaterial)
+wall1.rotation.y = - Math.PI * 0.5
+wall1.position.x = 7
+
+const wall2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(14, 7), wallMaterial)
+wall2.rotation.y = - Math.PI * 0.5
+wall2.position.x = - 7
+
+const wall3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(14, 7), wallMaterial)
+wall3.position.z = - 7
+
+const wall4 = new THREE.Mesh(new THREE.PlaneBufferGeometry(14, 7), wallMaterial)
+wall4.position.z = 7
+
+const roof = new THREE.Mesh(new THREE.PlaneBufferGeometry(14, 14), roofMaterial)
+roof.rotation.x = - Math.PI * 0.5
+roof.position.y = 3.5
+
+house.add(wall1, wall2, wall3, wall4, roof)
+
+const frameObject = new THREE.Object3D()
+const photoFrame1 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+photoFrame1.position.set(-3.5, 1, -6)
+const photoFrame2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+photoFrame2.position.set(0, 1, -6)
+const photoFrame3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+photoFrame3.position.set(3.5, 1, -6)
+frameObject.add(photoFrame1, photoFrame2, photoFrame3)
+
+const frameObject2 = new THREE.Object3D()
+const f2photoFrame1 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+f2photoFrame1.position.set(-3.5, 1, -6)
+const f2photoFrame2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+f2photoFrame2.position.set(0, 1, -6)
+const f2photoFrame3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+f2photoFrame3.position.set(3.5, 1, -6)
+frameObject2.add(f2photoFrame1, f2photoFrame2, f2photoFrame3)
+frameObject2.rotation.set(3,0,0)
+house.add(frameObject,frameObject2)
 
 
+// const w1photoFrame1 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w1photoFrame1.position.set(-3.5, 1, -6)
+// w1photoFrame1.rotation.set(0 , 0, 0) 
+// const w1photoFrame2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w1photoFrame2.position.set(0, 1, -6)
+// const w1photoFrame3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w1photoFrame3.position.set(3.5, 1, -6)
+// house.add(w1photoFrame1, w1photoFrame2, w1photoFrame3)
 
+
+// const w2photoFrame1 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w2photoFrame1.position.set(-3.5, 1, -6)
+// const w2photoFrame2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w2photoFrame2.position.set(0, 1, -6)
+// const w2photoFrame3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w2photoFrame3.position.set(3.5, 1, -6)
+// house.add(w2photoFrame1, w2photoFrame2, w2photoFrame3)
+
+// const w3photoFrame1 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w3photoFrame1.position.set(-3.5, 1, -6)
+// const w3photoFrame2 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w3photoFrame2.position.set(0, 1, -6)
+// const w3photoFrame3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
+// w3photoFrame3.position.set(3.5, 1, -6)
+// house.add(w3photoFrame1, w3photoFrame2, w3photoFrame3)
+
+scene.add(house)
 //light
 const ambLight = new THREE.AmbientLight(0xffffff, 0.2)
-const pointLight = new THREE.PointLight(0xffffff, 1)
-pointLight.position.x = 2
-pointLight.position.y = 3
-pointLight.position.z = 4
-scene.add(ambLight, pointLight)
+const pointLight = new THREE.PointLight(0x00ff00, 1)
+pointLight.position.set(0, 0, 0)
+const wall2pointLight = new THREE.PointLight(0xff0000, 1)
+wall2pointLight.position.set(1, 1, 1)
+const wall3pointLight = new THREE.PointLight(0x0000ff, 1)
+wall3pointLight.position.set(1, 1, 1)
+scene.add(ambLight, pointLight, wall2pointLight, wall3pointLight)
 
 let sensitivity = 0.02;
-document.addEventListener('keydown', event => {
-    // if (event.key == 'Shift') {
-    //     camera.position.y -= event.movementY * sensitivity / 0.10
-    //     camera.position.x -= event.movementX * sensitivity / 0.10
-    //     camera.position.z -= event.movementX * sensitivity / 0.10
-    // }
-    camera.position.y -= 1
-    // camera.position.x -= event.movementX * 0.001
-    // camera.position.z -= event.movementX * 0.001
-})
+// document.addEventListener('keydown', event => {
+//     // if (event.key == 'Shift') {
+//     //     camera.position.y -= event.movementY * sensitivity / 0.10
+//     //     camera.position.x -= event.movementX * sensitivity / 0.10
+//     //     camera.position.z -= event.movementX * sensitivity / 0.10
+//     // }
+//     camera.position.y -= 1
+//     // camera.position.x -= event.movementX * 0.001
+//     // camera.position.z -= event.movementX * 0.001
+// })
 
-document.addEventListener('keyup', event => {
-    // if (event.key == 'Shift') {
-    camera.position.y += 1
-    // camera.position.x = event.movementX * 0.001
-    // camera.position.z = event.movementX * 0.001
-    // }
-})
+// document.addEventListener('keyup', event => {
+//     // if (event.key == 'Shift') {
+//     camera.position.y += 1
+//     // camera.position.x = event.movementX * 0.001
+//     // camera.position.z = event.movementX * 0.001
+//     // }
+// })
 
 // const loader = new GLTFLoader();
 // loader.load(this.url, ((gltf) => {
@@ -160,9 +258,11 @@ window.addEventListener('resize', () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+// const camera = new THREE.OrthographicCamera( sizes.width / - 2,  sizes.width / 2,  sizes.height / 2,  sizes.height / - 2, 1, 1000 );
 camera.position.x = 1
 camera.position.y = 1
 camera.position.z = 2
+// camera.target = new THREE.Vector3(1, 1, 1);  
 scene.add(camera)
 
 // Controls
