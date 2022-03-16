@@ -110,8 +110,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  * Lights
  */
  const ambientLight = new THREE.AmbientLight(0xffffff, 0.1)
- scene.add(ambientLight)
- 
+//  scene.add(ambientLight)
+ const ambientLight2 = new THREE.AmbientLight(0x2a622a, 0.8)
+//  scene.add(ambientLight2)
  const directionalLight = new THREE.DirectionalLight(0xff0000, 0.5)
  directionalLight.castShadow = true
  directionalLight.shadow.mapSize.set(1024, 1024)
@@ -123,13 +124,24 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  directionalLight.position.set(- 5, 5, 0)
 //  scene.add(directionalLight)
 
-const pointLight = new THREE.PointLight(0xffffff,0.8)
-pointLight.position.set(4,4,4)
-const pointLight2 = new THREE.PointLight(0xff0000,0.8)
-pointLight2.position.set(0,0,0)
-const pointLight3 = new THREE.PointLight(0x0000ff,0.8)
-pointLight3.position.set(0,-2,0)
-scene.add(pointLight , pointLight2 )
+const pointLight = new THREE.PointLight(0xCC7722,0.4)
+// pointLight.position.set(4,4,4)
+const pointLight2 = new THREE.PointLight(0xff0000,0.3)
+pointLight2.position.set(-6,-6,0)
+const pointLight3 = new THREE.PointLight(0xFFD800,0.4)
+pointLight3.position.set(-4,-4,0)
+
+const floorLight = new THREE.PointLight(0xff0000,0.4)
+floorLight.position.set(0,0,0)
+const floorLight1 = new THREE.PointLight(0xffffff,0.4)
+floorLight1.position.set(-4,0,0)
+const floorLight2 = new THREE.PointLight(0xffffff,0.4)
+floorLight.position.set(4,0,0)
+const floorLight3 = new THREE.PointLight(0xffffff,0.4)
+floorLight3.position.set(8,0,0)
+const greenLight = new THREE.PointLight(0x37a52e,0.4)
+// greenLight.position.set(4,-4,0)
+scene.add(pointLight ,pointLight2 , pointLight3 , floorLight , floorLight2)
 
 /**
  * Animate
