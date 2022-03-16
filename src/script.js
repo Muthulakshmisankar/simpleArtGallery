@@ -7,7 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
  */
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
-
+var keyboard = ""
 /**
  * textures
  */
@@ -76,7 +76,7 @@ const roofMaterial = new THREE.MeshStandardMaterial({
     // material.transparent = true 
 })
 
-const floorMaterial = new THREE.MeshStandardMaterial({
+const floorMaterial = new THREE.MeshBasicMaterial({
     metalness: 0.3,
     roughness: 0.4,
     side: THREE.DoubleSide,
@@ -97,12 +97,16 @@ const wallMaterial = new THREE.MeshStandardMaterial({
     // roughnessMap: wallRoughnessTexture,
     normalMap: wallNormalTexture
 })
+
+const gallery = new THREE.TextureLoader()
+const galleryTexture = gallery.load('gallery/1.jpg')
 const frameMaterial = new THREE.MeshBasicMaterial({
     metalness: 0.3,
     roughness: 0.4,
     side: THREE.DoubleSide,
-    // map: framecolorTexture,
-    emissive: '#fffffff'
+    map: galleryTexture,
+    emissive: '#fffffff',
+    // envMap: galleryTexture
     // aoMap: wallMetalnessTexture,
     // aoMapIntensity: 1,
     // displacementMap: wallcolorTexture,
@@ -156,8 +160,9 @@ f2photoFrame2.position.set(0, 1, -6)
 const f2photoFrame3 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
 f2photoFrame3.position.set(3.5, 1, -6)
 frameObject2.add(f2photoFrame1, f2photoFrame2, f2photoFrame3)
-frameObject2.rotation.set(3,0,0)
-house.add(frameObject,frameObject2)
+frameObject2.rotation.set(3, 0, 0)
+frameObject2.position.set(0, 1, 0)
+house.add(frameObject, frameObject2)
 
 
 // const w1photoFrame1 = new THREE.Mesh(new THREE.PlaneBufferGeometry(2.5, 2), frameMaterial)
@@ -192,10 +197,22 @@ const ambLight = new THREE.AmbientLight(0xffffff, 0.2)
 const pointLight = new THREE.PointLight(0x00ff00, 1)
 pointLight.position.set(0, 0, 0)
 const wall2pointLight = new THREE.PointLight(0xff0000, 1)
-wall2pointLight.position.set(1, 1, 1)
+wall2pointLight.position.set(1, -1, 1)
 const wall3pointLight = new THREE.PointLight(0x0000ff, 1)
 wall3pointLight.position.set(1, 1, 1)
 scene.add(ambLight, pointLight, wall2pointLight, wall3pointLight)
+/**
+ * BOX3
+ */
+
+const box = new THREE.Box3();
+
+const cameramesh = new THREE.Mesh(
+    new THREE.BoxGeometry(),
+    new THREE.MeshBasicMaterial()
+);
+cameramesh.position.set(0, 0, 0)
+scene.add(cameramesh)
 
 let sensitivity = 0.02;
 // document.addEventListener('keydown', event => {
@@ -262,7 +279,10 @@ const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 
 camera.position.x = 1
 camera.position.y = 1
 camera.position.z = 2
-// camera.target = new THREE.Vector3(1, 1, 1);  
+// camera.target = house.position
+// const cameraTarget = new THREE.Vector3(0, 0, 0);
+// const cameraController = new THREE.Object3D()
+// cameraController.copy(camera)
 scene.add(camera)
 
 // Controls
@@ -277,6 +297,73 @@ const renderer = new THREE.WebGLRenderer({
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+/**
+ * Animation
+ */
+
+function move() {
+    //var delta = clock.getDelta(); // seconds.
+    //var moveDistance = 30 * delta; // 200 pixels per second
+    //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
+
+    for (var i = 0; i < 4; i++) {
+        if (detectCollisionCubes(wall1 , cameramesh )) {
+            // moveLeft = 0;
+            reUpdateCamera()
+        }
+        else if (detectCollisionCubes(wall2 , cameramesh )) {
+            // moveRight = 0;
+            reUpdateCamera()
+        }
+
+        if (detectCollisionCubes(wall3 , cameramesh )) {
+            // moveUp = 0;
+            reUpdateCamera()
+        }
+        else if (detectCollisionCubes(wall4 , cameramesh )) {
+            // moveDown = 0;
+            reUpdateCamera()
+        }
+    }
+
+    // if (keyboard.pressed("A") && moveLeft == 1) wall1.position.x -= 0.5;
+    // else if (keyboard.pressed("A") && moveLeft == 0) {
+    //     moveLeft = 1
+    // }
+    // if (keyboard.pressed("D") && moveRight == 1) wall1.position.x += 0.5;
+    // else if (keyboard.pressed("D") && moveRight == 0) {
+    //     moveRight = 1
+    // }
+    // if (keyboard.pressed("W") && moveUp == 1) wall1.position.y += 0.5;
+    // else if (keyboard.pressed("W") && moveUp == 0) {
+    //     moveUp = 1
+    // }
+    // if (keyboard.pressed("S") && moveDown == 1) wall1.position.y -= 0.5;
+    // else if (keyboard.pressed("S") && moveDown == 0) {
+    //     moveDown = 1
+    // }
+}
+
+
+function detectCollisionCubes(object1, object2) {
+    object1.geometry.computeBoundingBox();
+    object2.geometry.computeBoundingBox();
+    object1.updateMatrixWorld();
+    object2.updateMatrixWorld();
+    let box1 = object1.geometry.boundingBox.clone();
+    box1.applyMatrix4(object1.matrixWorld);
+    let box2 = object2.geometry.boundingBox.clone();
+    box2.applyMatrix4(object2.matrixWorld);
+
+    return box1.intersectsBox(box2);
+}
+function reUpdateCamera(){
+    const viewPos = camera.position
+    camera.rotate.x = viewPos.x - 2
+    // renderer.render(scene, camera)
+}
+// function animate() {
+//     requestAnimationFrame(animate);
 
 /**
  * Animate
@@ -287,12 +374,28 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
     // Update controls
     controls.update()
+    move()
+    // cameraController.position.copy(house.position);
+    // if(cameraController.position.y == ){
 
+    // }
+    // cameraTarget.copy(house.position)
+    // cameraTarget.z += 6;
+    // camera.lookAt(cameraTarget)   
     // Render
+
+    const viewPos = camera.position
+    cameramesh.position.x = viewPos.x 
+    cameramesh.position.y = viewPos.y 
+    cameramesh.position.z = viewPos.z 
+    // cameramesh.position.set(viewPos)
     renderer.render(scene, camera)
 
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
+
+
+
 
 tick()
