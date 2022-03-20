@@ -307,26 +307,32 @@ function move() {
     //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
 
     for (var i = 0; i < 4; i++) {
-        if (detectCollisionCubes(wall1 , cameramesh )) {
+        if (detectCollisionCubes(wall1, cameramesh)) {
             // moveLeft = 0;
-            reUpdateCamera()
+            console.log('Hitt wall1')
+            updateCamera('left')
         }
-        else if (detectCollisionCubes(wall2 , cameramesh )) {
+        else if (detectCollisionCubes(wall2, cameramesh)) {
             // moveRight = 0;
-            reUpdateCamera()
+            console.log('Hitt wall2')
+            updateCamera('right')
+
         }
 
-        if (detectCollisionCubes(wall3 , cameramesh )) {
+        if (detectCollisionCubes(wall3, cameramesh)) {
             // moveUp = 0;
-            reUpdateCamera()
+            console.log('Hitt wall3')
+            updateCamera('top')
         }
-        else if (detectCollisionCubes(wall4 , cameramesh )) {
+        else if (detectCollisionCubes(wall4, cameramesh)) {
             // moveDown = 0;
-            reUpdateCamera()
+            console.log('Hitt wall4')
+            updateCamera('bottom')
         }
     }
 
-    // if (keyboard.pressed("A") && moveLeft == 1) wall1.position.x -= 0.5;
+    // if (keyboard.pressed("A") && moveLeft == 1)
+    // wall1.position.x -= 0.5;
     // else if (keyboard.pressed("A") && moveLeft == 0) {
     //     moveLeft = 1
     // }
@@ -344,6 +350,19 @@ function move() {
     // }
 }
 
+function updateCamera(direction) {
+    if (direction == 'right') {
+        camera.position.x += 0.5;
+        // 
+    } else if (direction == 'left') {
+        camera.position.x -= 0.5;
+    } else if (direction == 'top') {
+        camera.position.y += 0.5;
+    } else if (direction == 'bottom') {
+        camera.position.y -= 0.5;
+    }
+    renderer.render(scene, camera)
+}
 
 function detectCollisionCubes(object1, object2) {
     object1.geometry.computeBoundingBox();
@@ -357,11 +376,35 @@ function detectCollisionCubes(object1, object2) {
 
     return box1.intersectsBox(box2);
 }
-function reUpdateCamera(){
+function leftreUpdateCamera() {
     const viewPos = camera.position
-    camera.rotate.x = viewPos.x - 2
-    // renderer.render(scene, camera)
+    camera.position.set(0, 0, 0)
+    cameramesh.position.set(0, 0, 0)
+    renderer.render(scene, camera)
 }
+
+function rightreUpdateCamera() {
+    const viewPos = camera.position
+    // camera.position.x = viewPos.z + 10
+    camera.position.set(0, 0, 0)
+    cameramesh.position.set(0, 0, 0)
+    renderer.render(scene, camera)
+}
+function topreUpdateCamera() {
+    const viewPos = camera.position
+    // camera.position.y = viewPos.y - 10
+    camera.position.set(0, 0, 0)
+    cameramesh.position.set(0, 0, 0)
+    renderer.render(scene, camera)
+}
+function bottomreUpdateCamera() {
+    const viewPos = camera.position
+    // camera.position.y = viewPos.z + 10
+    camera.position.set(0, 0, 0)
+    cameramesh.position.set(0, 0, 0)
+    renderer.render(scene, camera)
+}
+
 // function animate() {
 //     requestAnimationFrame(animate);
 
@@ -385,9 +428,9 @@ const tick = () => {
     // Render
 
     const viewPos = camera.position
-    cameramesh.position.x = viewPos.x 
-    cameramesh.position.y = viewPos.y 
-    cameramesh.position.z = viewPos.z 
+    cameramesh.position.x = viewPos.x
+    cameramesh.position.y = viewPos.y
+    cameramesh.position.z = viewPos.z
     // cameramesh.position.set(viewPos)
     renderer.render(scene, camera)
 
