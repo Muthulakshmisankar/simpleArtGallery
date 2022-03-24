@@ -7,11 +7,17 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 /**
  * Base
  */
+
+ var moveRight = 1;
+ var moveLeft = 1;
+ var moveUp = 1;
+ var moveDown = 1;
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 
 /**scene */
 const scene = new THREE.Scene()
+const masBlocks = []
 // scene.background = null
 
 // const keyboard = new THREEx.KeyboardState();
@@ -163,24 +169,6 @@ const tick = () => {
     controls.update()
     // Render
     renderer.render(scene, camera)
-    // var delta = clock.getDelta(); // seconds.
-    // let moveDistance = 200 * elapsedTime; // 200 pixels per second
-    // let rotateAngle = Math.PI / 2 * elapsedTime;   // pi/2 radians (90 degrees) per second
-
-    // let HouseMesh = scene.getObjectByName('goldenhouse');
-    // if (keyboard.pressed("A"))
-    //     HouseMesh.rotation.y += rotateAngle;
-    // if (keyboard.pressed("D"))
-    //     HouseMesh.rotation.y -= rotateAngle;
-
-    // if (keyboard.pressed("left"))
-    //     HouseMesh.position.x -= moveDistance;
-    // if (keyboard.pressed("right"))
-    //     HouseMesh.position.x += moveDistance;
-    // if (keyboard.pressed("up"))
-    //     HouseMesh.position.z -= moveDistance;
-    // if (keyboard.pressed("down"))
-    //     HouseMesh.position.z += moveDistance;
 
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
@@ -210,3 +198,57 @@ const setupKeyControls = () => {
 setupKeyControls()
 
 tick()
+
+
+function move() {
+    //var delta = clock.getDelta(); // seconds.
+    //var moveDistance = 30 * delta; // 200 pixels per second
+    //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
+  const masBlocks =[];
+    for (var i = 0; i < masBlocks.length; i++) {
+      if (detectCollisionCubes(player.children.find(el=>el.name==='left'), masBlocks[i])) {
+        moveLeft = 0;
+      }
+      else if (detectCollisionCubes(player.children.find(el=>el.name==='right'), masBlocks[i])) {
+        moveRight = 0;
+      }
+      if (detectCollisionCubes(player.children.find(el=>el.name==='up'), masBlocks[i])) {
+        moveUp = 0;
+      }
+      else if (detectCollisionCubes(player.children.find(el=>el.name==='down'), masBlocks[i])) {
+        moveDown = 0;
+      }
+    }
+        
+    if ( keyboard.pressed("A") && moveLeft == 1) player.position.x -= 0.5;
+    else if (keyboard.pressed("A") && moveLeft == 0) {
+      moveLeft = 1
+    }
+    if ( keyboard.pressed("D") && moveRight == 1) player.position.x += 0.5;
+    else if (keyboard.pressed("D") && moveRight == 0) {
+      moveRight = 1
+    }
+    if ( keyboard.pressed("W") && moveUp == 1) player.position.y += 0.5;
+    else if (keyboard.pressed("W") && moveUp == 0) {
+      moveUp = 1
+    }
+    if ( keyboard.pressed("S") && moveDown == 1) player.position.y -= 0.5;
+    else if (keyboard.pressed("S") && moveDown == 0) {
+      moveDown = 1
+    }
+    
+    
+   
+  }
+function detectCollisionCubes(object1, object2){
+    object1.geometry.computeBoundingBox();
+    object2.geometry.computeBoundingBox();
+    object1.updateMatrixWorld();
+    object2.updateMatrixWorld();
+    let box1 = object1.geometry.boundingBox.clone();
+    box1.applyMatrix4(object1.matrixWorld);
+    let box2 = object2.geometry.boundingBox.clone();
+    box2.applyMatrix4(object2.matrixWorld);
+  
+    return box1.intersectsBox(box2);
+  }
