@@ -2,263 +2,497 @@ import './style.css'
 import * as THREE from 'three'
 // import * as THREEx from 'threex';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js'
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
-/**
- * Base
- */
+$(document).ready(function () { flight.init(); });
 
- var moveRight = 1;
- var moveLeft = 1;
- var moveUp = 1;
- var moveDown = 1;
-// Canvas
-const canvas = document.querySelector('canvas.webgl')
-var HouseMesh ;
-/**scene */
-const scene = new THREE.Scene()
-const masBlocks = []
-// scene.background = null
+var flight = {
+    roomSize: 300,
+    viewerDistance: 2,
+    raceTubeRadius: 15,
+    crash: false,
+};
 
-// const keyboard = new THREEx.KeyboardState();
-/**
- * GlTF loader
- */
-const url = 'DamagedHelmet/glTF/DamagedHelmet.gltf'
-const url1 = 'the-great-drawing-room/source/src/model.obj'
-const url2 = ''
-const loader = new GLTFLoader();
-loader.load(url2, ((gltf) => {
-    // gltf.scene.scale.set(300, 300, 300);
-    // gltf.scene.position.set(220, 10, 400)
-    // scene.add(gltf.scene.children[0]);
-    console.log(gltf)
-    // camera.position.z = 7
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+flight.init = function () {
+    flight.clock = new THREE.Clock();
+    flight.start = false;
 
-}), undefined, ((err) => { console.log(err) }))
+    flight.scene = new THREE.Scene();
+    flight.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    flight.camera.position.z -= 3;
 
-const objloader = new OBJLoader();
+    flight.camGroup = new THREE.Group();
+    loadAirplane();
+    flight.camGroup.add(flight.camera);
 
-// load a resource
-objloader.load(
-    // resource URL
-    url1,
-    // called when resource is loaded
-    function (object) {
-        console.log(object)
-        let mesh = object.children[0]
-        mesh.name = 'goldenhouse'
-        mesh.position.y = -2
-        
-        scene.add(mesh);
-        HouseMesh = scene.getObjectByName('goldenhouse');
-    },
-    // called when loading is in progresses
-    function (xhr) {
+    flight.scene.add(flight.camGroup);
 
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    flight.renderer = new THREE.WebGLRenderer();
+    flight.renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(flight.renderer.domElement);
 
-    },
-    // called when loading has errors
-    function (error) {
+    //collision
+    flight.raycaster = new THREE.Raycaster();
+    flight.pointer = new THREE.Vector2();
+    flight.pointer.x = 1;
+    flight.pointer.y = 1;
 
-        console.log('An error happened');
 
+    loadModels();
+    // createRacewayTorus();
+    // createRacewayTorusKnot();
+    createEnvir();
+    controlSetUp();
+    lightingSetUp();
+    // eventHandler();
+
+    const startButton = document.getElementById('startButton');
+    startButton.addEventListener('click', function startUp() {
+        flight.overlay = document.getElementById('overlay');
+        flight.overlay.remove();
+        audioLoader();
+        animate();
+
+    });
+
+
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    // flight.controls.update();
+    let go = true;
+    if (!flight.crash || go) {
+        render();
+    } else {
+        // flight.overlay.add();
     }
-);
-
-/**
- * Sizes
- */
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
+    flight.renderer.render(flight.scene, flight.camera);
 }
 
-window.addEventListener('resize', () => {
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
+function render() {
+    const delta = flight.clock.getDelta();
 
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
+    //https://threejs.org/docs/index.html?q=ray#api/en/core/Raycaster
+    // update the picking ray with the camera and pointer position
+    flight.raycaster.setFromCamera(flight.pointer, flight.camera);
 
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
+    // calculate objects intersecting the picking ray
+    const intersects = flight.raycaster.intersectObjects(flight.scene.children);
+    console.log(intersects);
 
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.x = 1
-camera.position.y = 1
-camera.position.z = 2
+    // console.log(flight.scene.children);
 
-scene.add(camera)
+    // console.log(flight.scene.children[0]);
 
-// Controls
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
-controls.keys = {
-    LEFT: 'ArrowLeft', //left arrow
-    UP: 'ArrowUp', // up arrow
-    RIGHT: 'ArrowRight', // right arrow
-    BOTTOM: 'ArrowDown' // down arrow
-}
-/**
- * Renderer
- */
-const renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
-    //  alpha: true,
-    //  antialias: true 
-})
-renderer.setSize(sizes.width, sizes.height)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    flight.controls.movementSpeed = 30;
 
-/**
- * Lights
- */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.1)
-//  scene.add(ambientLight)
-const ambientLight2 = new THREE.AmbientLight(0x2a622a, 0.8)
-//  scene.add(ambientLight2)
-const directionalLight = new THREE.DirectionalLight(0xff0000, 0.5)
-directionalLight.castShadow = true
-directionalLight.shadow.mapSize.set(1024, 1024)
-directionalLight.shadow.camera.far = 15
-directionalLight.shadow.camera.left = - 7
-directionalLight.shadow.camera.top = 7
-directionalLight.shadow.camera.right = 7
-directionalLight.shadow.camera.bottom = - 7
-directionalLight.position.set(- 5, 5, 0)
-//  scene.add(directionalLight)
-
-const pointLight = new THREE.PointLight(0xCC7722, 0.4)
-// pointLight.position.set(4,4,4)
-const pointLight2 = new THREE.PointLight(0xff0000, 0.3)
-pointLight2.position.set(-6, -6, 0)
-const pointLight3 = new THREE.PointLight(0xFFD800, 0.4)
-pointLight3.position.set(-4, -4, 0)
-
-const floorLight = new THREE.PointLight(0xff0000, 0.4)
-floorLight.position.set(0, 0, 0)
-const floorLight1 = new THREE.PointLight(0xffffff, 0.4)
-floorLight1.position.set(-4, 0, 0)
-const floorLight2 = new THREE.PointLight(0xffffff, 0.4)
-floorLight.position.set(4, 0, 0)
-const floorLight3 = new THREE.PointLight(0xffffff, 0.4)
-floorLight3.position.set(8, 0, 0)
-const greenLight = new THREE.PointLight(0x37a52e, 0.4)
-// greenLight.position.set(4,-4,0)
-scene.add(pointLight, pointLight2, pointLight3, floorLight, floorLight2)
-
-const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1), new THREE.MeshBasicMaterial())
-cube.position.set(0,0,0);
-scene.add(cube)
-
-/**
- * Animate
- */
-const clock = new THREE.Clock()
-
-const tick = () => {
-    const elapsedTime = clock.getElapsedTime()
-    // Update controls
-    controls.update()
-    
-    // Render
-    renderer.render(scene, camera)
-
-    // Call tick again on the next frame
-    window.requestAnimationFrame(tick)
-}
-
-const setupKeyControls = () => {
-   
-    
-    document.onkeydown = (e) => {
-      
-        switch (e.key) {
-            case "a":
-                HouseMesh.position.x += 0.1;
-                break;
-            case "w":
-                HouseMesh.position.z -= 0.1;
-                break;
-            case "s":
-                HouseMesh.position.x -= 0.1;
-                break;
-            case "d":
-                HouseMesh.position.z += 0.1;
-                break;
-        }
-    };
-}
-setupKeyControls()
-
-tick()
-move()
-
-function move() {
-    //var delta = clock.getDelta(); // seconds.
-    //var moveDistance = 30 * delta; // 200 pixels per second
-    //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
-  const masBlocks =[];
-    // for (var i = 0; i < masBlocks.length; i++) {
-      if (detectCollisionCubes(cube, HouseMesh)) {
-        moveLeft = 0;
-        console.log('left')
-      }
-      else if (detectCollisionCubes(cube, HouseMesh)) {
-        moveRight = 0;
-        console.log('Right')
-      }
-      if (detectCollisionCubes(cube, HouseMesh)) {
-        moveUp = 0;
-        console.log('up')
-      }
-      else if (detectCollisionCubes(cube, HouseMesh)) {
-        moveDown = 0;
-        console.log('down')
-      }
+    // for (let i = 0; i < flight.scene.children.length; i++) {
+    //     if (flight.scene.children[i].isMesh) {
+    //         flight.scene.children[i].material.color.set(0xffffff);
+    //     }
     // }
-        
-    if ( keyboard.pressed("A") && moveLeft == 1) player.position.x -= 0.5;
-    else if (keyboard.pressed("A") && moveLeft == 0) {
-      moveLeft = 1
+    let kickStart = true;
+    for (let i = 0; i < intersects.length; i++) {
+
+        // intersects[i].object.material.color.set(0xff0000);
+        if (intersects[i].distance < 1) {
+
+            flight.controls.movementSpeed = 0;
+            console.log("crash");
+            kickStart = false;
+            if(flight.start) {
+                flight.crash = true;
+            }
+            // flight.ambientFlightSound.stop();
+            // flight.crashSoundEffect.play();
+        }
+
+        if(kickStart) {
+            flight.start = true;
+            // console.log(flight.start);
+
+        } 
+
     }
-    if ( keyboard.pressed("D") && moveRight == 1) player.position.x += 0.5;
-    else if (keyboard.pressed("D") && moveRight == 0) {
-      moveRight = 1
-    }
-    if ( keyboard.pressed("W") && moveUp == 1) player.position.y += 0.5;
-    else if (keyboard.pressed("W") && moveUp == 0) {
-      moveUp = 1
-    }
-    if ( keyboard.pressed("S") && moveDown == 1) player.position.y -= 0.5;
-    else if (keyboard.pressed("S") && moveDown == 0) {
-      moveDown = 1
-    }
-    
-    
-   
-  }
-function detectCollisionCubes(object1, object2){
-    object1.geometry.computeBoundingBox();
-    object2.geometry.computeBoundingBox();
-    object1.updateMatrixWorld();
-    object2.updateMatrixWorld();
-    let box1 = object1.geometry.boundingBox.clone();
-    box1.applyMatrix4(object1.matrixWorld);
-    let box2 = object2.geometry.boundingBox.clone();
-    box2.applyMatrix4(object2.matrixWorld);
-  
-    return box1.intersectsBox(box2);
-  }
+
+
+    flight.controls.update(delta);
+}
+
+function createEnvir() {
+    const loader = new THREE.TextureLoader();
+
+    flight.flatPlane = new THREE.PlaneGeometry(flight.roomSize, flight.roomSize);
+    flight.carpetTexture1 = new THREE.MeshBasicMaterial({
+        // color: 0x00cf00,
+        map: loader.load("texture/carpet1.jpg")
+    });
+    flight.floor = new THREE.Mesh(flight.flatPlane, flight.carpetTexture1);
+    flight.floor.rotateX(-Math.PI / 2);
+    flight.floor.receiveShadow = true;
+    flight.floor.position.y = -flight.roomSize * (2 / 5) + 5;
+    flight.scene.add(flight.floor);
+
+    flight.box = new THREE.BoxGeometry(flight.roomSize, flight.roomSize * (4 / 5), flight.roomSize);
+    flight.skyboxTexture = new THREE.MeshBasicMaterial({
+        map: loader.load("texture/cinderblock.jpg"),
+        side: THREE.BackSide,
+    });
+    flight.skybox = new THREE.Mesh(flight.box, flight.skyboxTexture);
+    flight.scene.add(flight.skybox);
+
+    flight.centerWalls = new THREE.BoxGeometry(flight.roomSize/4, flight.roomSize * (4 / 5), flight.roomSize/4);
+    flight.centerBox = new THREE.MeshBasicMaterial({
+        map: loader.load("texture/cinderblock.jpg"),
+    });
+    flight.scene.add(new THREE.Mesh(flight.centerWalls, flight.centerBox));
+
+    flight.ceilingTexture1 = new THREE.MeshBasicMaterial({
+        map: loader.load("texture/ceilingTile.jpg"),
+    })
+    flight.ceiling = new THREE.Mesh(flight.flatPlane, flight.ceilingTexture1);
+    flight.ceiling.rotateX(Math.PI / 2);
+    flight.ceiling.position.y = flight.roomSize * (2 / 5) - 5;
+    flight.scene.add(flight.ceiling);
+    posterCreator();
+}
+
+function controlSetUp() {
+    flight.controls = new FlyControls(flight.camGroup, flight.renderer.domElement);
+    // Forces the camera/ controls forward, similar to a normal flight sim
+    flight.controls.autoForward = true;
+    // I will include the movement speed and the roll speed, but set to the default just to show what work is being done
+    flight.controls.movementSpeed = 60;
+    flight.controls.rollSpeed = 0.65;
+    // controls.rollSpeed = Math.PI / 24;
+    flight.controls.domElement = flight.renderer.domElement;
+}
+
+function lightingSetUp() {
+    flight.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    // flight.directionalLight.position.set(1, 1, 1);
+    flight.directionalLight.position.set(flight.roomSize/2 - 50, flight.roomSize * (2 / 5) - 15, -(flight.roomSize / 2) + 50);
+    flight.scene.add(flight.directionalLight);
+
+    flight.ambientLight = new THREE.AmbientLight(0xaaaaaa, 0.2);
+    flight.scene.add(flight.ambientLight);
+}
+
+function loadModels() {
+    const loader = new GLTFLoader();
+    const ground = -flight.roomSize * (2 / 5) + 5;
+    const ceiling = flight.roomSize * (2 / 5) - 5;
+
+    loader.load('models/WoodenTable_01_4k/WoodenTable_01_4k.gltf',
+        function (gltf) {
+            // gltf.scene.position.y = 4;
+            flight.table = gltf.scene;
+            const scalar = 75;
+            flight.table.scale.set(scalar, scalar, scalar);
+            flight.table.position.y = ground;
+            flight.table.position.z = (flight.roomSize / 2) -30;
+            flight.scene.add(flight.table);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
+    loader.load('models/SchoolDesk_01_4k/SchoolDesk_01_4k.gltf',
+        function (gltf) {
+            // gltf.scene.position.y = 4;
+            flight.desk = gltf.scene;
+            const scalar = 75;
+            flight.desk.scale.set(scalar, scalar, scalar);
+            flight.desk.position.y = ground;
+            flight.desk.position.z = -(flight.roomSize / 2) +30;
+            flight.desk.rotateY(Math.PI);
+            flight.scene.add(flight.desk);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
+    loader.load('models/steel_frame_shelves_01_4k/steel_frame_shelves_01_4k.gltf',
+        function (gltf) {
+            flight.shelf = gltf.scene;
+            const scalar = 8;
+            flight.shelf.scale.set(scalar, scalar, scalar);
+            flight.shelf.position.x = -(flight.roomSize / 2) + 50;
+            flight.shelf.position.y = ground;
+            flight.shelf.position.z = -(flight.roomSize / 2) + 20;
+            flight.scene.add(flight.shelf);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
+    loader.load('models/Fabricio_SP7_gLTF/Fabricio SP7 gLTF/Fabricio SP7 gLTF.gltf',
+        function (gltf) {
+            flight.fixture = gltf.scene;
+            const scalar = 90;
+            flight.fixture.scale.set(scalar, scalar, scalar);
+            flight.fixture.position.x = (flight.roomSize / 2) - 50;
+            flight.fixture.position.y = ceiling - scalar/2 + 5;
+            flight.fixture.position.z = -(flight.roomSize / 2) + 50;
+            flight.scene.add(flight.fixture);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
+    loader.load('models/black_leather_chair.gltf',
+        function (gltf) {
+            flight.chair = gltf.scene;
+            const scalar = 90;
+            flight.chair.scale.set(scalar, scalar, scalar);
+            flight.chair.position.x = (flight.roomSize / 2) - 50;
+            flight.chair.position.y = ground;
+            flight.chair.position.z = (flight.roomSize / 2) - 50;
+            flight.chair.rotateY(Math.PI);
+            flight.scene.add(flight.chair);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
+    loader.load('models/PEACE_LILLY_gltf/PEACE_LILLY_gltf/PEACE_LILLY_5K.gltf',
+        function (gltf) {
+            flight.plant = gltf.scene;
+            const scalar = 90;
+            flight.plant.scale.set(scalar, scalar, scalar);
+            flight.plant.position.x = - 50;
+            flight.plant.position.y = ground + 40;
+            flight.plant.position.z = (flight.roomSize / 2) - 30;
+            // flight.plant.rotateY(Math.PI);
+            flight.scene.add(flight.plant);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
+}
+
+function loadAirplane() {
+    const loader = new GLTFLoader();
+    loader.load(
+        // resource URL
+        'models/basePlane.glb',
+        // called when the resource is loaded
+        function (gltf) {
+            // gltf.scene.position.y = 4;
+            flight.planeStanderd = gltf.scene;
+            // flight.planeStanderd.rotateZ(Math.PI/2);
+            // flight.planeStanderd.position.x -= 5;
+
+            flight.planeStanderd.position.z -= 0.11 + 3;
+            flight.planeStanderd.position.y -= 0.01;
+            flight.planeStanderd.rotation.y += Math.PI;
+            flight.planeStanderd.rotation.x += Math.PI / 12;
+
+            flight.planeStanderd.scale.set(0.05, 0.05, 0.05);
+            console.log(flight.planeStanderd);
+
+            // flight.scene.add( flight.planeStanderd );
+            flight.camGroup.add(flight.planeStanderd);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
+}
+
+function createRacewayTorus() {
+    const loader = new THREE.TextureLoader();
+    flight.racewayPhysical = new THREE.TorusGeometry(20, flight.raceTubeRadius, undefined, 30);
+    flight.racetrackVisual = new THREE.MeshLambertMaterial({
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        map: loader.load("texture/crumpledPaper.jpg")
+    });
+    flight.race = new THREE.Mesh(flight.racewayPhysical, flight.racetrackVisual);
+    flight.race.position.x = 20;
+    flight.scene.add(flight.race);
+}
+
+function createRacewayTorusKnot() {
+    const loader = new THREE.TextureLoader();
+    flight.racewayPhysical = new THREE.TorusKnotGeometry(30, flight.raceTubeRadius, undefined, 30);
+    flight.racetrackVisual = new THREE.MeshLambertMaterial({
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        map
+    });
+    flight.race = new THREE.Mesh(flight.racewayPhysical, flight.racetrackVisual);
+    // flight.race.position.x = 20;
+    flight.race.position.y = -10;
+    flight.scene.add(flight.race);
+}
+
+function eventHandler() {
+    const onKeyDown = function (event) {
+
+        switch (event.code) {
+
+            case 'ArrowUp':
+            case 'KeyW':
+                moveForward = true;
+                break;
+
+            case 'ArrowLeft':
+            case 'KeyA':
+                moveLeft = true;
+                break;
+
+            case 'ArrowDown':
+            case 'KeyS':
+                moveBackward = true;
+                break;
+
+            case 'ArrowRight':
+            case 'KeyD':
+                moveRight = true;
+                break;
+
+            case 'Space':
+                if (canJump === true) velocity.y += 350;
+                canJump = false;
+                break;
+
+        }
+
+    };
+
+    const onKeyUp = function (event) {
+
+        switch (event.code) {
+
+            case 'ArrowUp':
+            case 'KeyW':
+                moveForward = false;
+                break;
+
+            case 'ArrowLeft':
+            case 'KeyA':
+                moveLeft = false;
+                break;
+
+            case 'ArrowDown':
+            case 'KeyS':
+                moveBackward = false;
+                break;
+
+            case 'ArrowRight':
+            case 'KeyD':
+                moveRight = false;
+                break;
+
+        }
+
+    };
+
+    document.addEventListener('click', function () {
+        audioLoader();
+    })
+}
+
+function audioLoader() {
+    const audioListener = new THREE.AudioListener();
+    const loader = new THREE.AudioLoader();
+
+    flight.camera.add(audioListener);
+
+    flight.ambientFlightSound = new THREE.Audio(audioListener);
+
+    flight.crashSoundEffect = new THREE.Audio(audioListener);
+    flight.scene.add(flight.ambientFlightSound);
+    flight.scene.add(flight.crashSoundEffect)
+
+    loader.load(
+        'audio/Papers Rustling in the wind.mp3',
+        function (audioBuffer) {
+            flight.ambientFlightSound.setBuffer(audioBuffer);
+            flight.ambientFlightSound.play();
+        },
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // onError callback
+        function (err) {
+            console.log('An error happened');
+        }
+    );
+
+    loader.load(
+        "audio/Crash .mp3",
+        function (audioBuffer) {
+            flight.crashSoundEffect.setBuffer(audioBuffer);
+        },
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // onError callback
+        function (err) {
+            console.log('An error happened');
+        }
+    );
+}
+
+function posterCreator(){
+    const loader = new THREE.TextureLoader();
+    const scalar = 3;
+    flight.posterFrame = new THREE.BoxGeometry(1, scalar*40, scalar*27);
+    flight.posterPicture = new THREE.MeshBasicMaterial({
+        map: loader.load('texture/airplaneBlock.png'),
+        side: THREE.DoubleSide,
+    });
+    flight.posterComposite = new THREE.Mesh(flight.posterFrame, flight.posterPicture);
+    flight.posterComposite.position.x = flight.roomSize / 2 - 1;
+    // flight.posterComposite.position.y = ;
+    // flight.posterComposite.position.z = 
+    flight.scene.add(flight.posterComposite);
+}
