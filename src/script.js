@@ -54,6 +54,8 @@ objloader.load(
         
         scene.add(mesh);
         HouseMesh = scene.getObjectByName('goldenhouse');
+        let currentPos = HouseMesh.position || new THREE.Vector3()
+        HouseMesh.userData.currentPosition = currentPos
     },
     // called when loading is in progresses
     function (xhr) {
@@ -184,19 +186,37 @@ const setupKeyControls = () => {
    
     
     document.onkeydown = (e) => {
-      
+        let currentPos = HouseMesh.position || new THREE.Vector3()
+        HouseMesh.userData.currentPosition.copy( currentPos );
         switch (e.key) {
             case "a":
-                HouseMesh.position.x += 0.1;
+                if(!detectCollisionCubes(cube, HouseMesh)){
+                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                } else {
+                    HouseMesh.position.x += 0.1;
+                }
                 break;
             case "w":
-                HouseMesh.position.z -= 0.1;
+                if(!detectCollisionCubes(cube, HouseMesh)){
+                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                } else {
+                    HouseMesh.position.z -= 0.1;
+                }
                 break;
             case "s":
-                HouseMesh.position.x -= 0.1;
+                if(!detectCollisionCubes(cube, HouseMesh)){
+                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                } else {
+                    HouseMesh.position.x -= 0.1;
+                }
                 break;
             case "d":
-                HouseMesh.position.z += 0.1;
+                if(!detectCollisionCubes(cube, HouseMesh)){
+                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                } else {
+                    HouseMesh.position.z += 0.1;
+                }
+               
                 break;
         }
     };
@@ -204,7 +224,7 @@ const setupKeyControls = () => {
 setupKeyControls()
 
 tick()
-move()
+
 
 function move() {
     //var delta = clock.getDelta(); // seconds.
