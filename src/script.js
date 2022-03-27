@@ -14,7 +14,7 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
  var moveDown = 1;
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
-
+var HouseMesh ;
 /**scene */
 const scene = new THREE.Scene()
 const masBlocks = []
@@ -51,8 +51,9 @@ objloader.load(
         let mesh = object.children[0]
         mesh.name = 'goldenhouse'
         mesh.position.y = -2
+        
         scene.add(mesh);
-
+        HouseMesh = scene.getObjectByName('goldenhouse');
     },
     // called when loading is in progresses
     function (xhr) {
@@ -158,6 +159,10 @@ const greenLight = new THREE.PointLight(0x37a52e, 0.4)
 // greenLight.position.set(4,-4,0)
 scene.add(pointLight, pointLight2, pointLight3, floorLight, floorLight2)
 
+const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1), new THREE.MeshBasicMaterial())
+cube.position.set(0,0,0);
+scene.add(cube)
+
 /**
  * Animate
  */
@@ -167,6 +172,7 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
     // Update controls
     controls.update()
+    
     // Render
     renderer.render(scene, camera)
 
@@ -178,7 +184,7 @@ const setupKeyControls = () => {
    
     
     document.onkeydown = (e) => {
-        const HouseMesh = scene.getObjectByName('goldenhouse');
+      
         switch (e.key) {
             case "a":
                 HouseMesh.position.x += 0.1;
@@ -198,27 +204,31 @@ const setupKeyControls = () => {
 setupKeyControls()
 
 tick()
-
+move()
 
 function move() {
     //var delta = clock.getDelta(); // seconds.
     //var moveDistance = 30 * delta; // 200 pixels per second
     //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
   const masBlocks =[];
-    for (var i = 0; i < masBlocks.length; i++) {
-      if (detectCollisionCubes(player.children.find(el=>el.name==='left'), masBlocks[i])) {
+    // for (var i = 0; i < masBlocks.length; i++) {
+      if (detectCollisionCubes(cube, HouseMesh)) {
         moveLeft = 0;
+        console.log('left')
       }
-      else if (detectCollisionCubes(player.children.find(el=>el.name==='right'), masBlocks[i])) {
+      else if (detectCollisionCubes(cube, HouseMesh)) {
         moveRight = 0;
+        console.log('Right')
       }
-      if (detectCollisionCubes(player.children.find(el=>el.name==='up'), masBlocks[i])) {
+      if (detectCollisionCubes(cube, HouseMesh)) {
         moveUp = 0;
+        console.log('up')
       }
-      else if (detectCollisionCubes(player.children.find(el=>el.name==='down'), masBlocks[i])) {
+      else if (detectCollisionCubes(cube, HouseMesh)) {
         moveDown = 0;
+        console.log('down')
       }
-    }
+    // }
         
     if ( keyboard.pressed("A") && moveLeft == 1) player.position.x -= 0.5;
     else if (keyboard.pressed("A") && moveLeft == 0) {
