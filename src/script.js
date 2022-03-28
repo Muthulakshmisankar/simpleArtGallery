@@ -8,13 +8,13 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
  * Base
  */
 
- var moveRight = 1;
- var moveLeft = 1;
- var moveUp = 1;
- var moveDown = 1;
+var moveRight = 1;
+var moveLeft = 1;
+var moveUp = 1;
+var moveDown = 1;
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
-var HouseMesh ;
+var HouseMesh;
 /**scene */
 const scene = new THREE.Scene()
 const masBlocks = []
@@ -51,11 +51,12 @@ objloader.load(
         let mesh = object.children[0]
         mesh.name = 'goldenhouse'
         mesh.position.y = -2
-        
+
         scene.add(mesh);
         HouseMesh = scene.getObjectByName('goldenhouse');
         let currentPos = HouseMesh.position || new THREE.Vector3()
         HouseMesh.userData.currentPosition = currentPos
+        HouseMesh.userData.isHitted = false;
     },
     // called when loading is in progresses
     function (xhr) {
@@ -161,8 +162,8 @@ const greenLight = new THREE.PointLight(0x37a52e, 0.4)
 // greenLight.position.set(4,-4,0)
 scene.add(pointLight, pointLight2, pointLight3, floorLight, floorLight2)
 
-const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1), new THREE.MeshBasicMaterial())
-cube.position.set(0,0,0);
+const cube = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), new THREE.MeshBasicMaterial())
+cube.position.set(0, 0, 0);
 scene.add(cube)
 
 /**
@@ -174,7 +175,7 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
     // Update controls
     controls.update()
-    
+
     // Render
     renderer.render(scene, camera)
 
@@ -183,40 +184,68 @@ const tick = () => {
 }
 
 const setupKeyControls = () => {
-   
-    
+
+
     document.onkeydown = (e) => {
         let currentPos = HouseMesh.position || new THREE.Vector3()
-        HouseMesh.userData.currentPosition.copy( currentPos );
+        HouseMesh.userData.currentPosition.copy(currentPos);
         switch (e.key) {
             case "a":
-                if(!detectCollisionCubes(cube, HouseMesh)){
-                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                if (!detectCollisionCubes(cube, HouseMesh)) {
+                    HouseMesh.userData.isHitted = true;
+                    if (HouseMesh.userData.isHitted) {
+                     
+                        HouseMesh.position.copy(HouseMesh.userData.currentPosition);
+                        // HouseMesh.position.x -= 6;
+                        // HouseMesh.rotation.x -= 4;
+                    }
                 } else {
+                    HouseMesh.userData.isHitted = false;
                     HouseMesh.position.x += 0.1;
                 }
                 break;
             case "w":
-                if(!detectCollisionCubes(cube, HouseMesh)){
-                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                if (!detectCollisionCubes(cube, HouseMesh)) {
+                    HouseMesh.userData.isHitted = true;
+                    if (HouseMesh.userData.isHitted) {
+                
+                        HouseMesh.position.copy(HouseMesh.userData.currentPosition);
+                        // HouseMesh.position.z += 6;
+                        // HouseMesh.rotation.x -= 4;
+                    }
                 } else {
+                    HouseMesh.userData.isHitted = false;
                     HouseMesh.position.z -= 0.1;
                 }
                 break;
             case "s":
-                if(!detectCollisionCubes(cube, HouseMesh)){
-                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                if (!detectCollisionCubes(cube, HouseMesh)) {
+                    HouseMesh.userData.isHitted = true;
+                    if (HouseMesh.userData.isHitted) {
+                 
+                        HouseMesh.position.copy(HouseMesh.userData.currentPosition);
+                        // HouseMesh.position.x -= 6;
+                        // HouseMesh.rotation.x -= 4;
+                    }
                 } else {
+                    HouseMesh.userData.isHitted = false;
                     HouseMesh.position.x -= 0.1;
                 }
                 break;
             case "d":
-                if(!detectCollisionCubes(cube, HouseMesh)){
-                    HouseMesh.position.copy( HouseMesh.userData.currentPosition );
+                if (!detectCollisionCubes(cube, HouseMesh)) {
+                    HouseMesh.userData.isHitted = true;
+                    if (HouseMesh.userData.isHitted) {
+                  
+                        HouseMesh.position.copy(HouseMesh.userData.currentPosition);
+                        // HouseMesh.position.z -= 0.1;
+                        // HouseMesh.rotation.x -= 4;
+                    }
                 } else {
+                    HouseMesh.userData.isHitted = false;
                     HouseMesh.position.z += 0.1;
                 }
-               
+
                 break;
         }
     };
@@ -230,47 +259,47 @@ function move() {
     //var delta = clock.getDelta(); // seconds.
     //var moveDistance = 30 * delta; // 200 pixels per second
     //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
-  const masBlocks =[];
+    const masBlocks = [];
     // for (var i = 0; i < masBlocks.length; i++) {
-      if (detectCollisionCubes(cube, HouseMesh)) {
+    if (detectCollisionCubes(cube, HouseMesh)) {
         moveLeft = 0;
         console.log('left')
-      }
-      else if (detectCollisionCubes(cube, HouseMesh)) {
+    }
+    else if (detectCollisionCubes(cube, HouseMesh)) {
         moveRight = 0;
         console.log('Right')
-      }
-      if (detectCollisionCubes(cube, HouseMesh)) {
+    }
+    if (detectCollisionCubes(cube, HouseMesh)) {
         moveUp = 0;
         console.log('up')
-      }
-      else if (detectCollisionCubes(cube, HouseMesh)) {
+    }
+    else if (detectCollisionCubes(cube, HouseMesh)) {
         moveDown = 0;
         console.log('down')
-      }
+    }
     // }
-        
-    if ( keyboard.pressed("A") && moveLeft == 1) player.position.x -= 0.5;
+
+    if (keyboard.pressed("A") && moveLeft == 1) player.position.x -= 0.5;
     else if (keyboard.pressed("A") && moveLeft == 0) {
-      moveLeft = 1
+        moveLeft = 1
     }
-    if ( keyboard.pressed("D") && moveRight == 1) player.position.x += 0.5;
+    if (keyboard.pressed("D") && moveRight == 1) player.position.x += 0.5;
     else if (keyboard.pressed("D") && moveRight == 0) {
-      moveRight = 1
+        moveRight = 1
     }
-    if ( keyboard.pressed("W") && moveUp == 1) player.position.y += 0.5;
+    if (keyboard.pressed("W") && moveUp == 1) player.position.y += 0.5;
     else if (keyboard.pressed("W") && moveUp == 0) {
-      moveUp = 1
+        moveUp = 1
     }
-    if ( keyboard.pressed("S") && moveDown == 1) player.position.y -= 0.5;
+    if (keyboard.pressed("S") && moveDown == 1) player.position.y -= 0.5;
     else if (keyboard.pressed("S") && moveDown == 0) {
-      moveDown = 1
+        moveDown = 1
     }
-    
-    
-   
-  }
-function detectCollisionCubes(object1, object2){
+
+
+
+}
+function detectCollisionCubes(object1, object2) {
     object1.geometry.computeBoundingBox();
     object2.geometry.computeBoundingBox();
     object1.updateMatrixWorld();
@@ -279,6 +308,6 @@ function detectCollisionCubes(object1, object2){
     box1.applyMatrix4(object1.matrixWorld);
     let box2 = object2.geometry.boundingBox.clone();
     box2.applyMatrix4(object2.matrixWorld);
-  
+
     return box1.intersectsBox(box2);
-  }
+}
